@@ -46,3 +46,16 @@ Then run:
 ```
 run-django --module wsgi_werkzeug
 ```
+
+## Sample project
+
+```
+cd this repo
+virtualenv venv
+. ./venv/bin/activate
+pip install django watchdog django_extensions werkzeug
+export DJANGO_SETTINGS_MODULE=web.settings
+export WERKZEUG_DEBUG_PIN=off
+cd sample_project
+python ../run-django --module web.wsgi_werkzeug
+```
