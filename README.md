@@ -2,6 +2,8 @@
 
 Efficient auto reloader for uwsgi.
 
+This project uses inotify reloader instead of pooling.
+
 ## Install
 
 ```bash
@@ -13,6 +15,7 @@ sudo install run-django /usr/local/bin/
 ```
 # activate virtualenv
 cd project dir
+pip install watchdog
 run-django --module web.wsgi
 ```
 
@@ -25,4 +28,21 @@ File `~/.config/run_django.cfg` contains default settings:
 ```
 [DEFAULT]
 module = web.wsgi_werkzeug
+```
+
+## Werkzeug debugger
+
+Module `wsgi_werkzeug.py` wraps django wsgi into werkzeug debugger. Place this
+file in project and change line
+
+```
+os.environ.setdefault("DJANGO_SETTINGS_MODULE","web.settings")
+```
+
+to correct settings module.
+
+Then run:
+
+```
+run-django --module wsgi_werkzeug
 ```
