@@ -161,8 +161,8 @@ def get_settings():
 	settings['plugin'] = args.plugin or settings['plugin']
 	settings['listen'] = args.listen or settings['listen']
 	settings['module'] = args.module or settings['module']
-	settings['uwsgi_binary'] = args.module or settings['uwsgi_binary']
-	settings['logformat'] = args.module or settings['logformat']
+	settings['uwsgi_binary'] = args.uwsgi_binary or settings['uwsgi_binary']
+	settings['logformat'] = args.logformat or settings['logformat']
 	if not settings['module']:
 		raise ConfigError("Argument '%s' is required" % 'module')
 	if not settings['virtualenv']:
