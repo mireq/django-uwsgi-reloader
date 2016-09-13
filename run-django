@@ -9,14 +9,15 @@ import signal
 import subprocess
 import sys
 import threading
-import time
+
+from watchdog import events
+from watchdog.observers import Observer
+
 
 try:
 	import configparser
 except ImportError:
 	import ConfigParser as configparser
-from watchdog.events import PatternMatchingEventHandler
-from watchdog.observers import Observer
 
 
 LOG_SEPARATOR = b'\t'
@@ -28,7 +29,14 @@ STATUS_COLORS = {b'200': (32, 1), b'301': (33, 1), b'302': (33, 1), b'404': (31,
 LogLine = collections.namedtuple('LogLine', LOG_VARS)
 
 
-class ReloaderEventHandler(PatternMatchingEventHandler):
+class ReloaderEventHandler(events.PatternMatchingEventHandler):
+	RELOAD_ON_EVENTS = {
+		events.EVENT_TYPE_MOVED,
+		events.EVENT_TYPE_DELETED,
+		events.EVENT_TYPE_CREATED,
+		events.EVENT_TYPE_MODIFIED,
+	}
+
 	def __init__(self, *args, **kwargs):
 		self.proc = kwargs.pop('proc')
 		self.reload_wait_time = kwargs.pop('reload_wait_time')
@@ -46,21 +54,9 @@ class ReloaderEventHandler(PatternMatchingEventHandler):
 		self.timer = threading.Timer(self.reload_wait_time, reload_uwsgi)
 		self.timer.start()
 
-	def on_moved(self, event):
-		super(ReloaderEventHandler, self).on_moved(event)
-		self._run()
-
-	def on_created(self, event):
-		super(ReloaderEventHandler, self).on_created(event)
-		self._run()
-
-	def on_deleted(self, event):
-		super(ReloaderEventHandler, self).on_deleted(event)
-		self._run()
-
-	def on_modified(self, event):
-		super(ReloaderEventHandler, self).on_modified(event)
-		self._run()
+	def on_any_event(self, event):
+		if (event.event_type in self.RELOAD_ON_EVENTS):
+			self._run()
 
 
 class ConfigError(RuntimeError):
