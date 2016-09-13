@@ -31,7 +31,7 @@ LogLine = collections.namedtuple('LogLine', LOG_VARS)
 class ReloaderEventHandler(PatternMatchingEventHandler):
 	def __init__(self, *args, **kwargs):
 		self.proc = kwargs.pop('proc')
-		self.reload_wait_time = 0.1
+		self.reload_wait_time = kwargs.pop('reload_wait_time')
 		self.timer = None
 		super(ReloaderEventHandler, self).__init__(*args, **kwargs)
 
@@ -79,7 +79,7 @@ def main():
 	print('Running %s' % ' '.join("'" + p + "'" for p in params))
 	try:
 		proc = subprocess.Popen(params, stderr=subprocess.PIPE)
-		event_handler = ReloaderEventHandler(patterns=['*.py'], proc=proc)
+		event_handler = ReloaderEventHandler(patterns=['*.py'], proc=proc, reload_wait_time=settings['reload_wait_time'])
 		observer = Observer()
 		observer.schedule(event_handler, path=os.path.abspath("."), recursive=True)
 		observer.start()
@@ -119,7 +119,8 @@ def read_settings_file():
 		'module': None,
 		'uwsgi_binary': 'uwsgi',
 		'virtualenv': os.environ.get('VIRTUAL_ENV'),
-		'logformat': LOG_SEPARATOR.decode('utf-8').join('%(' + logvar + ')' for logvar in LOG_VARS)
+		'logformat': LOG_SEPARATOR.decode('utf-8').join('%(' + logvar + ')' for logvar in LOG_VARS),
+		'reload_wait_time': 0.1,
 	}
 	for key, value in config.items('DEFAULT'):
 		if not key in settings:
@@ -161,12 +162,18 @@ def get_settings():
 		type=str,
 		help="uwsgi log format"
 	)
+	parser.add_argument(
+		'--reload_wait_time',
+		type=float,
+		help="wait time before reload"
+	)
 	args = parser.parse_args()
 	settings['plugin'] = args.plugin or settings['plugin']
 	settings['listen'] = args.listen or settings['listen']
 	settings['module'] = args.module or settings['module']
 	settings['uwsgi_binary'] = args.uwsgi_binary or settings['uwsgi_binary']
 	settings['logformat'] = args.logformat or settings['logformat']
+	settings['reload_wait_time'] = args.reload_wait_time or settings['reload_wait_time']
 	if not settings['module']:
 		raise ConfigError("Argument '%s' is required" % 'module')
 	if not settings['virtualenv']:
