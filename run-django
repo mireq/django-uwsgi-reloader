@@ -11,7 +11,10 @@ import sys
 import threading
 import time
 
-import configparser
+try:
+	import configparser
+except ImportError:
+	import ConfigParser as configparser
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 
