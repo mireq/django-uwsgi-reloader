@@ -28,19 +28,20 @@ LogLine = collections.namedtuple('LogLine', LOG_VARS)
 class ReloaderEventHandler(PatternMatchingEventHandler):
 	def __init__(self, *args, **kwargs):
 		self.proc = kwargs.pop('proc')
-		self.last_run = 0
-		self.min_interval = 0.5 # minimal interval between reloads
+		self.reload_wait_time = 0.1
+		self.timer = None
 		super(ReloaderEventHandler, self).__init__(*args, **kwargs)
 
 	def _run(self):
-		now = time.time()
-		if now - self.last_run > self.min_interval:
-			self.last_run = now
-			pid = self.proc.pid
-			def reload_uwsgi():
-				os.kill(pid, signal.SIGHUP)
-				print("Reloading uwsgi ...")
-			threading.Timer(0.1, reload_uwsgi).start()
+		if self.timer is not None:
+			self.timer.cancel()
+		pid = self.proc.pid
+		def reload_uwsgi():
+			print("Reloading uwsgi ...")
+			os.kill(pid, signal.SIGHUP)
+			self.timer = None
+		self.timer = threading.Timer(self.reload_wait_time, reload_uwsgi)
+		self.timer.start()
 
 	def on_moved(self, event):
 		super(ReloaderEventHandler, self).on_moved(event)
