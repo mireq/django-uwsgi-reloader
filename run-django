@@ -55,7 +55,7 @@ class ReloaderEventHandler(events.PatternMatchingEventHandler):
 		self.timer.start()
 
 	def on_any_event(self, event):
-		if (event.event_type in self.RELOAD_ON_EVENTS):
+		if event.event_type in self.RELOAD_ON_EVENTS:
 			self._run()
 
 
