@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import argparse
 import collections
+import itertools
 import os
 import signal
 import subprocess
@@ -72,6 +73,7 @@ def main():
 	params += ['--module', settings['module']]
 	params += ['--virtualenv', settings['virtualenv']]
 	params += ['--logformat', settings['logformat']]
+	params += settings['forward_args']
 	print('Running %s' % ' '.join("'" + p + "'" for p in params))
 	try:
 		proc = subprocess.Popen(params, stderr=subprocess.PIPE)
@@ -163,7 +165,8 @@ def get_settings():
 		type=float,
 		help="wait time before reload"
 	)
-	args = parser.parse_args()
+	args = parser.parse_args(list(itertools.takewhile(lambda arg: arg != '--', sys.argv[1:])))
+	settings['forward_args'] = list(itertools.dropwhile(lambda arg: arg != '--', sys.argv[1:]))[1:]
 	settings['plugin'] = args.plugin or settings['plugin']
 	settings['listen'] = args.listen or settings['listen']
 	settings['module'] = args.module or settings['module']
