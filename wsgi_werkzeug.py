@@ -10,7 +10,7 @@ from django.template import TemplateSyntaxError
 from django.views import debug
 from django.views.debug import technical_500_response
 from django_extensions.management.utils import RedirectHandler
-from werkzeug import DebuggedApplication #pylint: disable=no-name-in-module
+from werkzeug.debug import DebuggedApplication
 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
